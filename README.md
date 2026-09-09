@@ -28,11 +28,10 @@ Delhivery documents, the India macroeconomy documents, or any other PDF you uplo
 
 ```bash
 cd factlayer
-python3 -m venv venv && source venv/bin/activate      # optional but recommended
+python3 -m venv venv && source venv/bin/activate      
 pip install -r requirements.txt
 
 export ANTHROPIC_API_KEY=sk-ant-...                    # required
-# optional: export ANTHROPIC_MODEL=claude-sonnet-4-5-20250929   (this is the default)
 
 uvicorn app.main:app --reload --port 8000
 ```
@@ -152,11 +151,3 @@ None of these are "solved" - see below for what's still missing in each.
 - **No auth, no multi-user support, single local SQLite file.** Fine for a prototype/demo, not
   for anything beyond that.
 
-## Additional Notes
-
-Built and tested against the provided `delhivery/` and `india-macroeconomy/` starter datasets.
-The Delhivery set is a good demo of corroboration/contradiction/reconciliation (e.g. revenue
-figures that should tie out or not depending on standalone vs consolidated scope, and director
-status changing between the 2022 prospectus and the FY24 annual report). The macroeconomy set is
-a good demo of the same fact (e.g. GDP growth, CPI inflation, repo rate) being reported slightly
-differently by the Economic Survey, the RBI, and the IMF depending on vintage and methodology.
