@@ -1,0 +1,16 @@
+services:
+  factlayer:
+    build: .
+    ports:
+      - "8000:8000"
+    environment:
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
+      - ANTHROPIC_MODEL=${ANTHROPIC_MODEL:-claude-sonnet-4-5-20250929}
+      - MAX_UPLOAD_MB=${MAX_UPLOAD_MB:-30}
+      - ALLOWED_ORIGINS=${ALLOWED_ORIGINS:-*}
+    volumes:
+      - factlayer-data:/app/data
+    restart: unless-stopped
+
+volumes:
+  factlayer-data:

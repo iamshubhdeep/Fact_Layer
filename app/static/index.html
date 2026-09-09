@@ -1,0 +1,318 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Fact Ledger</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='4' fill='%231E1B16'/%3E%3Ctext x='16' y='23' font-family='Georgia,serif' font-size='19' fill='%23F6F5F1' text-anchor='middle'%3EF%3C/text%3E%3C/svg%3E" />
+<style>
+  :root {
+    --paper: #F6F5F1;
+    --panel: #FDFCFA;
+    --ink: #1E1B16;
+    --muted: #746E60;
+    --line: #DEDACB;
+    --accent: #285C52;
+    --accent-ink: #F6F5F1;
+    --corroborate: #285C52;
+    --contradict: #A23B2E;
+    --reconcile: #A6790C;
+    --vision-bg: #EFE9D8;
+    --serif: ui-serif, Georgia, "Iowan Old Style", "Times New Roman", serif;
+    --sans: -apple-system, "Segoe UI", Helvetica, Arial, sans-serif;
+    --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: var(--sans);
+    -webkit-font-smoothing: antialiased;
+  }
+  a { color: var(--accent); }
+
+  header {
+    max-width: 880px;
+    margin: 0 auto;
+    padding: 44px 24px 28px;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 20px;
+  }
+  .wordmark { font-family: var(--serif); font-size: 30px; font-weight: 500; margin: 0; letter-spacing: -0.01em; }
+  .tagline { margin: 8px 0 0; color: var(--muted); font-size: 14.5px; max-width: 46ch; line-height: 1.5; }
+  .status-pill {
+    display: flex; align-items: center; gap: 7px; font-size: 12.5px; color: var(--muted);
+    border: 1px solid var(--line); border-radius: 20px; padding: 5px 12px 5px 10px; white-space: nowrap;
+    margin-top: 4px;
+  }
+  .status-dot { width: 7px; height: 7px; border-radius: 50%; background: #9a9484; flex-shrink:0; }
+  .status-dot.ok { background: var(--accent); }
+  .status-dot.degraded { background: var(--reconcile); }
+
+  main { max-width: 880px; margin: 0 auto; padding: 0 24px 80px; }
+
+  .stat-strip {
+    display: flex; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line);
+    margin-bottom: 40px;
+  }
+  .stat { flex: 1; padding: 16px 4px; border-right: 1px solid var(--line); }
+  .stat:last-child { border-right: none; }
+  .stat .n { font-family: var(--mono); font-size: 22px; }
+  .stat .l { color: var(--muted); font-size: 12.5px; margin-top: 2px; }
+
+  section { padding: 34px 0; border-top: 1px solid var(--line); }
+  section:first-of-type { border-top: none; padding-top: 0; }
+  .section-head { display: flex; align-items: baseline; gap: 14px; margin-bottom: 6px; }
+  .section-num { font-family: var(--serif); font-size: 26px; color: var(--muted); }
+  .section-title { font-size: 17px; font-weight: 600; margin: 0; }
+  .section-sub { color: var(--muted); font-size: 13.5px; margin: 0 0 18px 40px; max-width: 60ch; line-height: 1.5; }
+
+  .controls { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-left: 40px; }
+
+  input[type=file] {
+    font-size: 13px; font-family: var(--sans); color: var(--muted);
+  }
+  button {
+    background: var(--ink); color: var(--accent-ink); border: 1px solid var(--ink);
+    border-radius: 4px; padding: 8px 14px; font-size: 13px; font-family: var(--sans);
+    cursor: pointer;
+  }
+  button.secondary { background: transparent; color: var(--ink); border: 1px solid var(--line); }
+  button:disabled { opacity: .45; cursor: default; }
+  button:hover:not(:disabled) { opacity: .85; }
+
+  #uploadStatus, .status-note { font-size: 13px; color: var(--muted); }
+
+  .content-block { margin-left: 40px; margin-top: 18px; }
+
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th, td { text-align: left; padding: 9px 10px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th { color: var(--muted); font-weight: 500; font-size: 12.5px; }
+  td.mono, .quote { font-family: var(--mono); font-size: 12px; }
+  .quote { color: #454035; }
+  .doc-tag {
+    display: inline-block; background: var(--panel); border: 1px solid var(--line);
+    border-radius: 4px; padding: 1px 7px; font-size: 11px; color: var(--muted); font-family: var(--mono);
+  }
+  .doc-tag.vision { background: var(--vision-bg); border-color: #DCCE9F; color: #6b5a1e; }
+
+  .rel-card {
+    border-left: 3px solid var(--line); padding: 4px 0 4px 16px; margin-bottom: 22px;
+  }
+  .rel-card.corroborates { border-left-color: var(--corroborate); }
+  .rel-card.contradicts { border-left-color: var(--contradict); }
+  .rel-card.reconciled { border-left-color: var(--reconcile); }
+  .rel-type {
+    font-size: 12.5px; font-weight: 600; margin-bottom: 10px; display: block;
+  }
+  .rel-type.corroborates { color: var(--corroborate); }
+  .rel-type.contradicts { color: var(--contradict); }
+  .rel-type.reconciled { color: var(--reconcile); }
+  .fact-pair { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 10px; }
+  .fact-box { background: var(--panel); border: 1px solid var(--line); border-radius: 5px; padding: 10px 12px; }
+  .fact-box .src { color: var(--muted); font-size: 11px; font-family: var(--mono); margin-bottom: 5px; }
+  .fact-box strong { font-size: 13px; font-weight: 600; display: block; margin-bottom: 5px; }
+  .explanation { font-size: 13.5px; color: #383429; line-height: 1.5; }
+
+  .empty {
+    color: var(--muted); font-size: 13.5px; padding: 18px 16px; border: 1px dashed var(--line);
+    border-radius: 6px; background: var(--panel);
+  }
+
+  @media (max-width: 620px) {
+    header { flex-direction: column; }
+    .fact-pair { grid-template-columns: 1fr; }
+    .section-sub, .controls, .content-block { margin-left: 0; }
+    table { font-size: 12px; }
+    th:nth-child(5), td:nth-child(5) { display: none; } /* hide period column on small screens */
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div>
+    <p class="wordmark">Fact Ledger</p>
+    <p class="tagline">Upload PDFs and see every fact grounded in its source, then find where documents agree, disagree, or explain each other.</p>
+  </div>
+  <div class="status-pill"><span class="status-dot" id="statusDot"></span><span id="statusText">checking…</span></div>
+</header>
+
+<main>
+
+  <div class="stat-strip">
+    <div class="stat"><div class="n" id="statDocs">0</div><div class="l">documents</div></div>
+    <div class="stat"><div class="n" id="statFacts">0</div><div class="l">facts extracted</div></div>
+    <div class="stat"><div class="n" id="statRels">0</div><div class="l">relationships found</div></div>
+  </div>
+
+  <section>
+    <div class="section-head"><span class="section-num">1</span><h2 class="section-title">Upload a document</h2></div>
+    <p class="section-sub">Add PDFs one at a time. Upload at least two related documents to get cross-document relationships in step 3.</p>
+    <div class="controls">
+      <input type="file" id="fileInput" accept="application/pdf" />
+      <button id="uploadBtn">Upload and extract</button>
+      <button id="resetBtn" class="secondary">Reset everything</button>
+    </div>
+    <p class="content-block" id="uploadStatus"></p>
+    <div class="content-block" id="docList"></div>
+  </section>
+
+  <section>
+    <div class="section-head"><span class="section-num">2</span><h2 class="section-title">Extracted facts</h2></div>
+    <p class="section-sub">Every fact is quoted verbatim from its source page. Facts marked <span class="doc-tag vision">vision</span> were read from a rendered page image because the PDF's text layer was too sparse there.</p>
+    <div class="controls">
+      <button id="refreshFactsBtn" class="secondary">Refresh</button>
+    </div>
+    <div class="content-block" id="factsContainer"><p class="empty">Nothing here yet — upload a PDF in step 1.</p></div>
+  </section>
+
+  <section>
+    <div class="section-head"><span class="section-num">3</span><h2 class="section-title">Relationships</h2></div>
+    <p class="section-sub">Facts from different documents, compared and explained.</p>
+    <div class="controls">
+      <button id="analyzeBtn">Analyze new documents</button>
+      <button id="fullAnalyzeBtn" class="secondary">Full recompute</button>
+      <span class="status-note" id="analyzeStatus"></span>
+    </div>
+    <div class="content-block" id="relContainer"><p class="empty">Nothing here yet — upload facts from two or more documents, then analyze.</p></div>
+  </section>
+
+</main>
+
+<script>
+const $ = (id) => document.getElementById(id);
+
+async function loadHealth() {
+  try {
+    const res = await fetch('/api/health');
+    const data = await res.json();
+    $('statusDot').className = 'status-dot ' + (data.status === 'ok' ? 'ok' : 'degraded');
+    $('statusText').textContent = data.status === 'ok' ? 'ready' : 'needs API key';
+  } catch {
+    $('statusDot').className = 'status-dot degraded';
+    $('statusText').textContent = 'unreachable';
+  }
+}
+
+async function loadDocuments() {
+  const docs = await (await fetch('/api/documents')).json();
+  $('statDocs').textContent = docs.length;
+  $('docList').innerHTML = docs.length ? (
+    '<table><thead><tr><th>File</th><th>Status</th></tr></thead><tbody>' +
+    docs.map(d => `<tr><td>${d.filename}</td><td>${d.status}</td></tr>`).join('') +
+    '</tbody></table>'
+  ) : '';
+}
+
+async function loadFacts() {
+  const facts = await (await fetch('/api/facts')).json();
+  $('statFacts').textContent = facts.length;
+  if (!facts.length) {
+    $('factsContainer').innerHTML = '<p class="empty">Nothing here yet — upload a PDF in step 1.</p>';
+    return;
+  }
+  const rows = facts.map(f => `
+    <tr>
+      <td>
+        <span class="doc-tag">${f.filename} p.${f.page_number ?? '?'}</span>
+        ${f.extraction_method && f.extraction_method !== 'text' ? `<span class="doc-tag vision">${f.extraction_method}</span>` : ''}
+      </td>
+      <td>${f.canonical_entity ? f.canonical_entity + ' <span class="status-note">(' + f.entity + ')</span>' : (f.entity ?? '')}</td>
+      <td>${f.canonical_metric ? f.canonical_metric + ' <span class="status-note">(' + f.metric + ')</span>' : (f.metric ?? '')}</td>
+      <td class="mono">${f.value ?? ''} ${f.unit ?? ''}</td>
+      <td>${f.period ?? ''}</td>
+      <td>${f.statement ?? ''}</td>
+      <td class="quote">“${f.quote ?? ''}”</td>
+    </tr>`).join('');
+  $('factsContainer').innerHTML = `
+    <table>
+      <thead><tr><th>Source</th><th>Entity</th><th>Metric</th><th>Value</th><th>Period</th><th>Statement</th><th>Evidence</th></tr></thead>
+      <tbody>${rows}</tbody>
+    </table>`;
+}
+
+async function loadRelationships() {
+  const rels = await (await fetch('/api/relationships')).json();
+  $('statRels').textContent = rels.length;
+  if (!rels.length) {
+    $('relContainer').innerHTML = '<p class="empty">Nothing here yet — upload facts from two or more documents, then analyze.</p>';
+    return;
+  }
+  $('relContainer').innerHTML = rels.map(r => `
+    <div class="rel-card ${r.relation_type}">
+      <span class="rel-type ${r.relation_type}">${r.relation_type}</span>
+      <div class="fact-pair">
+        <div class="fact-box">
+          <div class="src">${r.fact_a.filename} · p.${r.fact_a.page_number ?? '?'}</div>
+          <strong>${r.fact_a.statement}</strong>
+          <div class="quote">“${r.fact_a.quote ?? ''}”</div>
+        </div>
+        <div class="fact-box">
+          <div class="src">${r.fact_b.filename} · p.${r.fact_b.page_number ?? '?'}</div>
+          <strong>${r.fact_b.statement}</strong>
+          <div class="quote">“${r.fact_b.quote ?? ''}”</div>
+        </div>
+      </div>
+      <div class="explanation">${r.explanation}</div>
+    </div>`).join('');
+}
+
+$('uploadBtn').onclick = async () => {
+  const file = $('fileInput').files[0];
+  if (!file) { $('uploadStatus').textContent = 'Choose a PDF first.'; return; }
+  $('uploadBtn').disabled = true;
+  $('uploadStatus').textContent = 'Uploading and extracting facts — this can take a minute for long PDFs…';
+  const formData = new FormData();
+  formData.append('file', file);
+  try {
+    const res = await fetch('/api/upload', { method: 'POST', body: formData });
+    const data = await res.json();
+    if (res.ok) {
+      $('uploadStatus').textContent = `Done — extracted ${data.fact_count} facts` +
+        (data.vision_fallback_facts ? ` (${data.vision_fallback_facts} read from page images).` : '.');
+    } else {
+      $('uploadStatus').textContent = `Upload failed: ${data.error || data.detail || 'unknown error'}`;
+    }
+  } catch (e) {
+    $('uploadStatus').textContent = `Upload failed: ${e}`;
+  }
+  $('uploadBtn').disabled = false;
+  await loadDocuments();
+  await loadFacts();
+};
+
+$('refreshFactsBtn').onclick = loadFacts;
+
+async function runAnalysis(mode) {
+  $('analyzeBtn').disabled = true;
+  $('fullAnalyzeBtn').disabled = true;
+  $('analyzeStatus').textContent = mode === 'full' ? 'Recomputing all relationships…' : 'Analyzing newly-added documents…';
+  const res = await fetch(`/api/analyze?mode=${mode}`, { method: 'POST' });
+  const data = await res.json();
+  $('analyzeStatus').textContent = `Found ${data.relationship_count} new relationships.`;
+  $('analyzeBtn').disabled = false;
+  $('fullAnalyzeBtn').disabled = false;
+  await loadRelationships();
+}
+$('analyzeBtn').onclick = () => runAnalysis('incremental');
+$('fullAnalyzeBtn').onclick = () => runAnalysis('full');
+
+$('resetBtn').onclick = async () => {
+  if (!confirm('This deletes all uploaded documents, facts, and relationships. Continue?')) return;
+  await fetch('/api/reset', { method: 'POST' });
+  await loadDocuments();
+  await loadFacts();
+  await loadRelationships();
+};
+
+loadHealth();
+loadDocuments();
+loadFacts();
+loadRelationships();
+</script>
+</body>
+</html>
