@@ -1,4 +1,4 @@
-# Fact Knowledge Layer (basic prototype)
+# Fact Knowledge Layer 
 
 A minimal, working version of the assignment: upload PDFs, extract grounded facts, and see how
 facts across documents corroborate, contradict, or get reconciled by context.
